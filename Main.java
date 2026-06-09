@@ -23,6 +23,12 @@ public class Main {
 
             if(opcao == 1){
                 cadastrarInvestidor(in);
+            }else if(opcao == 2){
+                
+            } else if (opcao == 3) {
+                
+            } else if (opcao == 4) {
+                
             }
         }
 
