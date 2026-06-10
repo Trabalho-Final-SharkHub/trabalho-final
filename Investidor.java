@@ -23,7 +23,6 @@ public class Investidor {
         nome = nomeNovo;
     }
 
-
     public String getEmail(){
         return email;
     }
