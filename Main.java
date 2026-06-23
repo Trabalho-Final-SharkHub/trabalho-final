@@ -1,14 +1,16 @@
 import java.util.*;
 public class Main {
     static final int MAX = 100;
+    static final int MAXPitch = 2000;
     //cria vetor para investidores
     static Investidor[] investidores = new Investidor[MAX];
-
     //cria vetor para startups
     static Startup [] startups = new Startup[MAX];
     //total
+    static Pitch [] pitches = new Pitch[MAXPitch];
     static int totalInvestidores = 0;
     static int totalStartups = 0;
+    static int totalPitches = 0;
 
     public static void main(String[]args){
         Scanner in = new Scanner(System.in);
@@ -33,16 +35,42 @@ public class Main {
             opcao = in.nextInt();
             in.nextLine();
 
-            if(opcao == 1){
-                cadastrarInvestidor(in);
-            }else if(opcao == 2){
-                cadastrarStartup(in);
-            } else if (opcao == 3) {
-                
-            } else if (opcao == 4) {
-                
-            } else if (opcao == 6) {
-                listarInvestidores();
+            switch (opcao) {
+                case 0:
+                    System.out.println("Saindo...");
+                    break;
+                case 1:
+                    cadastrarInvestidor(in);
+                    break;
+                case 2:
+                    cadastrarStartup(in);
+                    break;
+                case 3:
+                    adicionarPitch(in);
+                    break;
+                case 4:
+                    //adicionarInvestimento(in);
+                    break;
+                case 5:
+                    listarStartup();
+                    break;
+                case 6:
+                    listarInvestidores();
+                    break;
+                case 7:
+                    // consultarInvestimentos();
+                    break;
+                case 8:
+                    // calcularValuation(in);
+                    break;
+                case 9:
+                    // exibirRanking();
+                    break;
+                case 10:
+                    // exibirIndiceUnicornizacao();
+                    break;
+                default:
+                    System.out.println("Opção inválida!");
             }
         }
 
@@ -50,8 +78,6 @@ public class Main {
 
     //Opcao 1 do Menu principal
     public static void cadastrarInvestidor(Scanner in){
-
-
         if (totalInvestidores >= MAX) {
             System.out.println("Limite atingido.");
             return;
@@ -62,7 +88,8 @@ public class Main {
         System.out.println("Digite o nome do investidor:");
         String nome = in.nextLine();
         System.out.println("Digite o email do investidor:");
-        String email = in.nextLine();
+        String email1 = in.nextLine();
+        String email = verificarEmail(email1, in);
         Investidor novo = new Investidor(id, nome, email);
         investidores[totalInvestidores] = novo;
         totalInvestidores++;
@@ -107,7 +134,7 @@ public class Main {
     //Metodos para investidores
     public static Investidor buscarInvestidor(String nome){
         for(int i = 0; i < totalInvestidores; i++){
-            if(investidores[i].getNome() == nome){
+            if(investidores[i].getNome().equals(nome)){
                 return investidores[i];
             }
         }
@@ -129,5 +156,82 @@ public class Main {
         }
     }
 
-    
+    public static void listarStartup(){
+        if (totalStartups == 0) {
+            System.out.println("Nenhuma startup cadastrado.");
+            return;
+        }
+        System.out.println("=== Startups Cadastradas ===");
+
+        for (int i = 0; i < totalStartups; i++) {
+            System.out.println("ID: " + startups[i].getId());
+            System.out.println("Nome: " + startups[i].getNome());
+            System.out.println("Área de Atuacao: " + startups[i].getAreaAtuacao());
+            System.out.println("Data de criação: " + startups[i].getData());
+            System.out.println("Investidor: " + startups[i].getInvestidor());
+            System.out.println("-----------------------------");
+        }
+    }
+
+    public static String verificarEmail(String email, Scanner in) {
+        for (int i = 0; i < totalInvestidores; i++)
+            if (email.equals(investidores[i].getEmail())) {
+                System.out.println("Email já cadastrado!");
+                System.out.println("Digite novamente um email:");
+                email = in.nextLine();
+                return email;
+            } else {
+                return email;
+            }
+        return email;
+    }
+
+    //Métodos para pitch
+
+    public static void adicionarPitch(Scanner in) {
+        System.out.println("Qual o id do pitch?");
+        int id = in.nextInt();
+        System.out.println("Qual o título da apresentacao?");
+        String titulo = in.nextLine();
+        System.out.println("Qual a nota de inovacao?");
+        double notaIno = in.nextDouble();
+        System.out.println("Qual a nota de mercado?");
+        double notaMercado = in.nextDouble();
+        System.out.println("Por fim, selecione uma das Startups abaixo:");
+        listarStartup();
+        System.out.println("Digite o id de uma das Startups acima:");
+        int escolher = in.nextInt();
+        for (int i = 0; i < totalStartups; i++) {
+            if (startups[i].getId() == escolher) {
+                System.out.println("Pitch registrado com sucesso!");
+            } else {
+                System.out.println("Tente novamente!");
+            }
+        }
+        Pitch pitch = new Pitch(id, titulo, notaIno, notaMercado, startups[escolher]);
+        pitches[totalPitches] = pitch;
+        totalPitches++;
+        System.out.println("Startup cadastrada com sucesso! Aperte ENTER para voltar ao menu.");
+
+        if (totalPitches == 0) {
+            System.out.println("Nenhuma startup cadastrado.");
+            return;
+        }
+    }
+
+    public static void listarPitches(){
+        System.out.println("=== Pitches Cadastrados ===");
+
+        for (int i = 0; i < totalPitches; i++) {
+            System.out.println("ID: " + pitches[i].getId());
+            System.out.println("Título: " + pitches[i].getTitulo());
+            System.out.println("Nota Inovacao: " + pitches[i].getNotaInovacao());
+            System.out.println("Nota Mercado: " + pitches[i].getNotaMercado());
+            System.out.println("Startup Relacionada: " + pitches[i].getStartup());
+            System.out.println("-----------------------------");
+        }
+
+    }
 }
+
+

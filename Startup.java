@@ -55,6 +55,11 @@ public class Startup {
 
     }
 
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
     //
 
 }

@@ -29,4 +29,9 @@ public class Investidor {
     public void setEmail(String emailNovo){
         email = emailNovo;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
