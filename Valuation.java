@@ -40,8 +40,11 @@ public class Valuation {
 
     
     public String toString() {
-        return "Valuation [Startup: " + (startup != null ? startup.getNome() : "N/A") + " | Total captado: R$ " + String.format("%.2f", valorCaptado) + "]";
+        String nomeStartup = "N/A";
+        if (startup != null) {
+            nomeStartup = startup.getNome();
+        }
+        return "Valuation [Startup: " + nomeStartup + " | Total captado: R$ " + valorCaptado + "]";
     }
-}
 }
 

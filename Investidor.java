@@ -32,6 +32,6 @@ public class Investidor {
 
     @Override
     public String toString() {
-        return super.toString();
+        return nome + " (ID: " + id + " | Email: " + email + ")";
     }
 }

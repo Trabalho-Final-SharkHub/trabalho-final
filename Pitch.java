@@ -64,15 +64,15 @@ public class Pitch {
 
     
     public String toString() {
+        String nomeStartup = "N/A";
+        if (startup != null) {
+            nomeStartup = startup.getNome();
+        }
         return "Pitch [ID: " + id
                 + " | Titulo: " + titulo
                 + " | Nota Inovacao: " + notaInovacao
                 + " | Nota Mercado: " + notaMercado
-                + " | Media: " + String.format("%.2f", calcularMediaPitch())
-                + " | Startup: " + (startup != null ? startup.getNome() : "N/A") + "]";
-    }
-}
-    public Startup getStartup() {
-        return startup;
+                + " | Media: " + calcularMediaPitch()
+                + " | Startup: " + nomeStartup + "]";
     }
 }

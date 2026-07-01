@@ -6,8 +6,9 @@ public class Main {
     static Investidor[] investidores = new Investidor[MAX];
     //cria vetor para startups
     static Startup [] startups = new Startup[MAX];
-    //total
+    //vetor de pitches
     static Pitch [] pitches = new Pitch[MAXPitch];
+    //vetor de investimentos
     static Investimento [] investimentos = new Investimento[MAX];
     static int totalInvestidores = 0;
     static int totalStartups = 0;
@@ -17,7 +18,6 @@ public class Main {
     public static void main(String[]args){
         Scanner in = new Scanner(System.in);
         int opcao = -1;
-
 
         while(opcao != 0){
             System.out.println("=========== Shark Hub ============");
@@ -31,13 +31,13 @@ public class Main {
             System.out.println("7) Consultar Investimentos");
             System.out.println("8) Calcular Valuation");
             System.out.println("9) Exibir Ranking de Startups");
-            System.out.println("10) Exibir Índice de Unicornização");
+            System.out.println("10) Exibir Indice de Unicornizacao (IPU)");
             System.out.println("---------- Cases Extras ----------");
             System.out.println("11) Listar Pitches");
+            System.out.println("12) Simulador de Crescimento (5 anos)");
             System.out.println("==================================");
 
-            opcao = in.nextInt();
-            in.nextLine();
+            opcao = lerInteiro(in, "Escolha uma opcao: ");
 
             switch (opcao) {
                 case 0:
@@ -56,7 +56,7 @@ public class Main {
                     adicionarInvestimento(in);
                     break;
                 case 5:
-                    listarStartup();
+                    consultarStartup(in);
                     break;
                 case 6:
                     listarInvestidores();
@@ -65,48 +65,70 @@ public class Main {
                     consultarInvestimentos();
                     break;
                 case 8:
-                    // calcularValuation(in);
+                    calcularValuation(in);
                     break;
                 case 9:
-                    // exibirRanking();
+                    exibirRankingStartups();
                     break;
                 case 10:
-                    // exibirIndiceUnicornizacao();
+                    exibirIndiceUnicornizacao();
                     break;
                 case 11:
                     listarPitches();
                     break;
                 case 12:
-                    consultarStartup(in);
+                    simuladorCrescimento(in);
+                    break;
                 default:
-                    System.out.println("Opção inválida!");
+                    System.out.println("Opcao invalida!");
             }
         }
-
     }
 
-    //Opcao 1 do Menu principal
+    // ===================== Leitura segura (resolve o bug do Scanner) =====================
+
+    // Le um inteiro e consome o "Enter" que sobra no buffer (resolve o bug do Scanner).
+    public static int lerInteiro(Scanner in, String mensagem){
+        System.out.print(mensagem);
+        int valor = in.nextInt();
+        in.nextLine(); // limpa o buffer
+        return valor;
+    }
+
+    // Le um double e consome o "Enter" que sobra no buffer.
+    public static double lerDouble(Scanner in, String mensagem){
+        System.out.print(mensagem);
+        double valor = in.nextDouble();
+        in.nextLine(); // limpa o buffer
+        return valor;
+    }
+
+    // ===================== Opcao 1 - Cadastrar Investidor =====================
     public static void cadastrarInvestidor(Scanner in){
         if (totalInvestidores >= MAX) {
-            System.out.println("Limite atingido.");
+            System.out.println("Limite de investidores atingido.");
             return;
         }
-        System.out.println("Digite o ID do investidor:");
-        int id = in.nextInt();
-        in.nextLine();
-        System.out.println("Digite o nome do investidor:");
+        int id = lerInteiro(in, "Digite o ID do investidor: ");
+        System.out.print("Digite o nome do investidor: ");
         String nome = in.nextLine();
-        System.out.println("Digite o email do investidor:");
-        String email1 = in.nextLine();
-        String email = verificarEmail(email1, in);
+
+        String email;
+        do {
+            System.out.print("Digite o email do investidor: ");
+            email = in.nextLine();
+            if (emailJaExiste(email)) {
+                System.out.println("Email ja cadastrado! Informe outro.");
+            }
+        } while (emailJaExiste(email));
+
         Investidor novo = new Investidor(id, nome, email);
         investidores[totalInvestidores] = novo;
         totalInvestidores++;
-        System.out.println("Investidor cadastrado com sucesso! Aperte ENTER para voltar ao menu.");
-        in.nextLine();
+        System.out.println("Investidor cadastrado com sucesso!");
     }
 
-    //Opcao 2 do Menu principal
+    // ===================== Opcao 2 - Cadastrar Startup =====================
     public static void cadastrarStartup(Scanner in){
         if (totalStartups >= MAX){
             System.out.println("Limite de Startups no programa atingido!");
@@ -116,31 +138,30 @@ public class Main {
             System.out.println("Cadastre um investidor antes de cadastrar uma startup.");
             return;
         }
-        System.out.println("Digite o ID da Startup:");
-        int id = in.nextInt();
-        in.nextLine();
-        System.out.println("Digite o nome da Startup:");
+        int id = lerInteiro(in, "Digite o ID da Startup: ");
+        System.out.print("Digite o nome da Startup: ");
         String nome = in.nextLine();
-        System.out.println("Digite a Área de Atuação da Startup:");
+        System.out.print("Digite a Area de Atuacao da Startup: ");
         String areaAtuacao = in.nextLine();
-        System.out.println("Digite a data em que a fundação foi fundada (formato dd/mm/aaaa):");
+        System.out.print("Digite a data de fundacao (formato dd/mm/aaaa): ");
         String data = in.nextLine();
-        System.out.println("Digite o nome do investidor correspondente da lista:");
+
+        System.out.println("Escolha o investidor responsavel pelo nome:");
         listarInvestidores();
+        System.out.print("Nome do investidor: ");
         String nomeInvestidor = in.nextLine();
         Investidor investidorEscolhido = buscarInvestidor(nomeInvestidor);
         if (investidorEscolhido == null) {
-            System.out.println("Investidor não encontrado!");
+            System.out.println("Investidor nao encontrado!");
             return;
         }
         Startup novo = new Startup(id, nome, areaAtuacao, data, investidorEscolhido);
         startups[totalStartups] = novo;
         totalStartups++;
-        System.out.println("Startup cadastrada com sucesso! Aperte ENTER para voltar ao menu.");
-        in.nextLine();
+        System.out.println("Startup cadastrada com sucesso!");
     }
 
-    //Metodos para investidores
+    // ===================== Buscas (reuso) =====================
     public static Investidor buscarInvestidor(String nome){
         for(int i = 0; i < totalInvestidores; i++){
             if(investidores[i].getNome().equals(nome)){
@@ -150,13 +171,41 @@ public class Main {
         return null;
     }
 
+    public static Startup buscarStartupPorId(int id){
+        for (int i = 0; i < totalStartups; i++) {
+            if (startups[i].getId() == id) {
+                return startups[i];
+            }
+        }
+        return null;
+    }
+
+    public static Investidor buscarInvestidorPorId(int id){
+        for (int i = 0; i < totalInvestidores; i++) {
+            if (investidores[i].getId() == id) {
+                return investidores[i];
+            }
+        }
+        return null;
+    }
+
+    // Responde "esse e-mail ja existe?" comparando com TODOS os investidores.
+    public static boolean emailJaExiste(String email){
+        for (int i = 0; i < totalInvestidores; i++) {
+            if (email.equals(investidores[i].getEmail())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ===================== Opcao 6 - Listar Investidores =====================
     public static void listarInvestidores() {
         if (totalInvestidores == 0) {
             System.out.println("Nenhum investidor cadastrado.");
             return;
         }
         System.out.println("=== Investidores cadastrados ===");
-
         for (int i = 0; i < totalInvestidores; i++) {
             System.out.println("ID: " + investidores[i].getId());
             System.out.println("Nome: " + investidores[i].getNome());
@@ -167,279 +216,134 @@ public class Main {
 
     public static void listarStartup(){
         if (totalStartups == 0) {
-            System.out.println("Nenhuma startup cadastrado.");
+            System.out.println("Nenhuma startup cadastrada.");
             return;
         }
         System.out.println("=== Startups Cadastradas ===");
-
         for (int i = 0; i < totalStartups; i++) {
-            System.out.println("ID: " + startups[i].getId());
-            System.out.println("Nome: " + startups[i].getNome());
-            System.out.println("Área de Atuacao: " + startups[i].getAreaAtuacao());
-            System.out.println("Data de criação: " + startups[i].getData());
-            System.out.println("Investidor: " + startups[i].getInvestidor());
-            System.out.println("-----------------------------");
+            System.out.println("ID: " + startups[i].getId()
+                    + " | Nome: " + startups[i].getNome()
+                    + " | Area: " + startups[i].getAreaAtuacao()
+                    + " | Investidor: " + startups[i].getInvestidor().getNome());
         }
     }
 
-    public static String verificarEmail(String email, Scanner in) {
-        for (int i = 0; i < totalInvestidores; i++)
-            if (email.equals(investidores[i].getEmail())) {
-                System.out.println("Email já cadastrado!");
-                System.out.println("Digite novamente um email:");
-                email = in.nextLine();
-                return email;
-            } else {
-                return email;
-            }
-        return email;
-    }
-
-    //Métodos para pitch
-
+    // ===================== Opcao 3 - Adicionar Pitch =====================
     public static void adicionarPitch(Scanner in) {
-        System.out.println("Qual o id do pitch?");
-        int id = in.nextInt();
-        System.out.println("Qual o título da apresentacao?");
-        String titulo = in.nextLine();
-        System.out.println("Qual a nota de inovacao?");
-        double notaIno = in.nextDouble();
-        System.out.println("Qual a nota de mercado?");
-        double notaMercado = in.nextDouble();
-        System.out.println("Por fim, selecione uma das Startups abaixo:");
-        listarStartup();
-        System.out.println("Digite o id de uma das Startups acima:");
-        int escolher = in.nextInt();
-        for (int i = 0; i < totalStartups; i++) {
-            if (startups[i].getId() == escolher) {
-                System.out.println("Pitch registrado com sucesso!");
-            } else {
-                System.out.println("Tente novamente!");
-            }
+        if (totalStartups == 0) {
+            System.out.println("Nenhuma startup cadastrada. Cadastre uma startup antes.");
+            return;
         }
-        Pitch pitch = new Pitch(id, titulo, notaIno, notaMercado, startups[escolher]);
+        if (totalPitches >= MAXPitch) {
+            System.out.println("Limite de pitches atingido.");
+            return;
+        }
+
+        int id = lerInteiro(in, "Qual o id do pitch? ");
+        System.out.print("Qual o titulo da apresentacao? ");
+        String titulo = in.nextLine();
+
+        double notaIno = lerDouble(in, "Qual a nota de inovacao (0 a 10)? ");
+        if (notaIno < 0 || notaIno > 10) {
+            System.out.println("Nota invalida. Deve estar entre 0 e 10.");
+            return;
+        }
+        double notaMercado = lerDouble(in, "Qual a nota de mercado (0 a 10)? ");
+        if (notaMercado < 0 || notaMercado > 10) {
+            System.out.println("Nota invalida. Deve estar entre 0 e 10.");
+            return;
+        }
+
+        System.out.println("Selecione a Startup pelo ID:");
+        listarStartup();
+        int escolher = lerInteiro(in, "Digite o id da Startup: ");
+        Startup startup = buscarStartupPorId(escolher);
+        if (startup == null) {
+            System.out.println("Startup nao encontrada!");
+            return;
+        }
+
+        Pitch pitch = new Pitch(id, titulo, notaIno, notaMercado, startup);
         pitches[totalPitches] = pitch;
         totalPitches++;
-        System.out.println("Startup cadastrada com sucesso! Aperte ENTER para voltar ao menu.");
-
-        if (totalPitches == 0) {
-            System.out.println("Nenhuma startup cadastrado.");
-            return;
-        }
+        System.out.println("Pitch registrado com sucesso!");
     }
 
+    // ===================== Opcao 11 - Listar Pitches =====================
     public static void listarPitches(){
+        if (totalPitches == 0) {
+            System.out.println("Nenhum pitch cadastrado.");
+            return;
+        }
         System.out.println("=== Pitches Cadastrados ===");
-
         for (int i = 0; i < totalPitches; i++) {
             System.out.println("ID: " + pitches[i].getId());
-            System.out.println("Título: " + pitches[i].getTitulo());
+            System.out.println("Titulo: " + pitches[i].getTitulo());
             System.out.println("Nota Inovacao: " + pitches[i].getNotaInovacao());
             System.out.println("Nota Mercado: " + pitches[i].getNotaMercado());
-            System.out.println("Startup Relacionada: " + pitches[i].getStartup());
+            System.out.println("Media: " + pitches[i].calcularMediaPitch());
+            System.out.println("Startup Relacionada: " + pitches[i].getStartup().getNome());
             System.out.println("-----------------------------");
         }
     }
 
+    // ===================== Opcao 4 - Adicionar Investimento =====================
     public static void adicionarInvestimento(Scanner in){
         System.out.println("=== Adicionar Investimento ===");
-        System.out.println("Digite o ID da Startup que você quer adicionar abaixo:");
-        listarStartup();
-        int idStartup = in.nextInt();
-        for (int i = 0; i < totalStartups; i++) {
-            if (startups[i].getId() == idStartup) {
-                System.out.println("Startup encontrada: " + startups[i].getNome());
-            } else {
-                System.out.println("Startup não encontrada. Tente novamente.");
-                return;
-            }
-        }
-        System.out.println("Digite o ID do investidor abaixo:");
-        listarInvestidores();
-        int idInvestidor = in.nextInt();
-        for (int i = 0; i < totalInvestidores; i++) {
-            if (investidores[i].getId() == idInvestidor) {
-                System.out.println("Investidor encontrado: " + investidores[i].getNome());
-            } else {
-                System.out.println("Investidor não encontrado. Tente novamente.");
-                return;
-            }
-        }
-        System.out.println("Digite o valor do investimento:");
-        double valorInvestimento = in.nextDouble();
-        Investimento investimento = new Investimento(startups[idStartup], valorInvestimento);
-        System.out.println("Investimento adicionado com sucesso!");        
-    }
-
-    public static void consultarStartup(Scanner in){
-            System.out.println("=== Startups Cadastradss ===");
-            if (totalStartups == 0){
-                System.out.println("Nenhuma Startup encontrada!");
-            }else {
-                for (int i = 0; i < totalStartups; i++) {
-                    System.out.println("ID: " + startups[i].getId());
-                    System.out.println("Nome: " + startups[i].getNome());
-                    System.out.println("Area de Atuacao: " + startups[i].getAreaAtuacao());
-                    System.out.println("Data: " + startups[i].getData());
-                    System.out.println("Investidor: " + startups[i].getInvestidor());
-                    System.out.println("Titulo de Pitch: " + pitches[i].getTitulo());
-                    System.out.println("-----------------------------");
-                }
-            }
-            System.out.println("Digite enter para voltar ao Menu!");
-            in.nextLine();
-    }
-
-    public static void consultarInvestimentos(){
-        for (int i = 0; i < totalInvestimentos; i++) {
-            System.out.println("Startup ID: " + investimentos[i].getStartup());
-            System.out.println("Valor da Startup captado: " + investimentos[i].getValorCaptado());
-        }
-    }
-
-}
-
-    //Opcao 3 do menu - Adicionar Pitch.
-     /* Fluxo: pedir id da startup -> buscar -> se nao existir, erro ->
-     * pedir titulo e notas -> validar -> criar Pitch -> guardar no vetor.
-     */
-    /*public static void adicionarPitch(Scanner in) {
         if (totalStartups == 0) {
-            System.out.println("Erro: nenhuma startup cadastrada. Cadastre uma startup antes.");
+            System.out.println("Nenhuma startup cadastrada. Cadastre uma startup antes.");
             return;
         }
-
-        if (totalPitches >= MAX) {
-            System.out.println("Erro: limite de pitches atingido.");
-            return;
-        }
-
-        int idStartup = lerInteiro(in, "Id da startup: ");
-        Startup startup = buscarStartupPorId(idStartup);
-
-        if (startup == null) {
-            System.out.println("Erro: startup nao encontrada.");
-            return;
-        }
-
-        System.out.print("Titulo do pitch: ");
-        String titulo = in.nextLine();
-
-        if (titulo.isBlank()) {
-            System.out.println("Erro: titulo invalido.");
-            return;
-        }
-
-        double notaInovacao = lerDouble(in, "Nota de inovacao (0 a 10): ");
-        if (notaInovacao < 0 || notaInovacao > 10) {
-            System.out.println("Erro: nota deve estar entre 0 e 10.");
-            return;
-        }
-
-        double notaMercado = lerDouble(in, "Nota de mercado (0 a 10): ");
-        if (notaMercado < 0 || notaMercado > 10) {
-            System.out.println("Erro: nota deve estar entre 0 e 10.");
-            return;
-        }
-
-        int idPitch = totalPitches + 1; // id sequencial simples
-        Pitch novoPitch = new Pitch(idPitch, titulo, notaInovacao, notaMercado, startup);
-
-        pitches[totalPitches] = novoPitch;
-        totalPitches++;
-
-        System.out.println("Pitch cadastrado com sucesso.");
-    }
-
-    /**
-     * Media dos pitches de UMA startup especifica.
-     * Percorre o vetor de pitches filtrando pela startup (relacionamento).
-     */
-    /*public static double calcularMediaPitchesStartup(Startup startup) {
-        double soma = 0;
-        int quantidade = 0;
-
-        for (int i = 0; i < totalPitches; i++) {
-            if (pitches[i].getStartup().getId() == startup.getId()) {
-                soma += pitches[i].calcularMediaPitch();
-                quantidade++;
-            }
-        }
-
-        if (quantidade == 0) {
-            return 0;
-        }
-
-        return soma / quantidade;
-    }
-
-    /**
-     * Opcao 4 do menu - Adicionar Investimento.
-     * Fluxo: pedir id da startup -> buscar -> se nao existir, erro ->
-     * pedir valor e percentual -> validar -> criar Investimento -> guardar no vetor.
-     */
-    /*static void adicionarInvestimento(Scanner in) {
-        if (totalStartups == 0) {
-            System.out.println("Erro: nenhuma startup cadastrada. Cadastre uma startup antes.");
-            return;
-        }
-
         if (totalInvestimentos >= MAX) {
-            System.out.println("Erro: limite de investimentos atingido.");
+            System.out.println("Limite de investimentos atingido.");
             return;
         }
 
-        int idStartup = lerInteiro(in, "Id da startup: ");
+        System.out.println("Escolha a Startup pelo ID:");
+        listarStartup();
+        int idStartup = lerInteiro(in, "Digite o ID da Startup: ");
         Startup startup = buscarStartupPorId(idStartup);
-
         if (startup == null) {
-            System.out.println("Erro: startup nao encontrada.");
+            System.out.println("Startup nao encontrada. Tente novamente.");
             return;
         }
 
-        double valor = lerDouble(in, "Valor investido (R$): ");
+        double valor = lerDouble(in, "Digite o valor do investimento (R$): ");
         if (valor <= 0) {
-            System.out.println("Erro: valor investido deve ser maior que zero.");
+            System.out.println("Valor invalido. Deve ser maior que zero.");
             return;
         }
-
-        double percentual = lerDouble(in, "Percentual de participacao (%): ");
-        if (percentual <= 0) {
-            System.out.println("Erro: percentual de participacao deve ser maior que zero.");
+        double percentual = lerDouble(in, "Digite o percentual de participacao (%): ");
+        if (percentual <= 0 || percentual > 100) {
+            System.out.println("Percentual invalido. Deve estar entre 0 e 100.");
             return;
         }
 
         int idInvestimento = totalInvestimentos + 1; // id sequencial simples
-        Investimento novoInvestimento = new Investimento(idInvestimento, valor, percentual, startup);
-
-        investimentos[totalInvestimentos] = novoInvestimento;
+        Investimento investimento = new Investimento(idInvestimento, valor, percentual, startup);
+        investimentos[totalInvestimentos] = investimento;
         totalInvestimentos++;
-
-        System.out.println("Investimento cadastrado com sucesso.");
+        System.out.println("Investimento adicionado com sucesso!");
     }
 
-    /**
-     * Opcao 7 do menu - Consultar Investimentos.
-     * Lista todos os investimentos cadastrados (independente da startup).
-     */
-    /*static void consultarInvestimentos() {
+    // ===================== Opcao 7 - Consultar Investimentos =====================
+    public static void consultarInvestimentos(){
         if (totalInvestimentos == 0) {
             System.out.println("Nenhum investimento cadastrado.");
             return;
         }
-
-        System.out.println("\n--- Investimentos cadastrados ---");
+        System.out.println("=== Investimentos cadastrados ===");
         for (int i = 0; i < totalInvestimentos; i++) {
-            System.out.println(investimentos[i]);
+            System.out.println("ID: " + investimentos[i].getId());
+            System.out.println("Valor: R$ " + investimentos[i].getValor());
+            System.out.println("Participacao: " + investimentos[i].getPercentualParticipacao() + "%");
+            System.out.println("Startup: " + investimentos[i].getStartup().getNome());
+            System.out.println("-----------------------------");
         }
     }
 
-    /**
-     * Soma o total investido em UMA startup especifica, percorrendo
-     * o vetor de investimentos e filtrando pelo relacionamento com a startup.
-     * Usado tanto pela consulta de startup quanto pelo calculo de valuation.
-     */
-    /*static double calcularTotalInvestidoStartup(Startup startup) {
+    // Soma o total investido em UMA startup especifica (filtra pelo ID da startup).
+    public static double calcularTotalInvestidoStartup(Startup startup){
         double soma = 0;
         for (int i = 0; i < totalInvestimentos; i++) {
             if (investimentos[i].getStartup().getId() == startup.getId()) {
@@ -449,59 +353,105 @@ public class Main {
         return soma;
     }
 
-    /**
-     * Opcao 8 do menu - Calcular Valuation.
-     * Pede a startup, cria um objeto Valuation e calcula o total captado
-     * somando os investimentos ligados a ela.
-     */
-    /*static void calcularValuation(Scanner in) {
-        if (totalStartups == 0) {
-            System.out.println("Erro: nenhuma startup cadastrada.");
+    // Media dos pitches de UMA startup especifica.
+    public static double calcularMediaPitchesStartup(Startup startup){
+        double soma = 0;
+        int quantidade = 0;
+        for (int i = 0; i < totalPitches; i++) {
+            if (pitches[i].getStartup().getId() == startup.getId()) {
+                soma += pitches[i].calcularMediaPitch();
+                quantidade++;
+            }
+        }
+        if (quantidade == 0) {
+            return 0;
+        }
+        return soma / quantidade;
+    }
+
+    // ===================== Opcao 5 - Consultar Startup (dossie completo) =====================
+    public static void consultarStartup(Scanner in){
+        if (totalStartups == 0){
+            System.out.println("Nenhuma Startup cadastrada!");
+            return;
+        }
+        System.out.println("Escolha a Startup pelo ID:");
+        listarStartup();
+        int id = lerInteiro(in, "Digite o ID da Startup: ");
+        Startup startup = buscarStartupPorId(id);
+        if (startup == null) {
+            System.out.println("Startup nao encontrada!");
             return;
         }
 
-        int idStartup = lerInteiro(in, "Id da startup: ");
-        Startup startup = buscarStartupPorId(idStartup);
+        System.out.println("\n===== Dossie da Startup =====");
+        System.out.println("ID: " + startup.getId());
+        System.out.println("Nome: " + startup.getNome());
+        System.out.println("Area de Atuacao: " + startup.getAreaAtuacao());
+        System.out.println("Data de fundacao: " + startup.getData());
+        System.out.println("Tempo de existencia: " + startup.calcularExistencia() + " ano(s)");
+        System.out.println("Investidor responsavel: " + startup.getInvestidor().getNome());
 
+        System.out.println("\n--- Pitches ---");
+        boolean temPitch = false;
+        for (int i = 0; i < totalPitches; i++) {
+            if (pitches[i].getStartup().getId() == startup.getId()) {
+                System.out.println("- " + pitches[i].getTitulo()
+                        + " | Media: " + pitches[i].calcularMediaPitch());
+                temPitch = true;
+            }
+        }
+        if (!temPitch) System.out.println("Nenhum pitch cadastrado para esta startup.");
+
+        System.out.println("\n--- Investimentos ---");
+        boolean temInvest = false;
+        for (int i = 0; i < totalInvestimentos; i++) {
+            if (investimentos[i].getStartup().getId() == startup.getId()) {
+                System.out.println("- R$ " + investimentos[i].getValor()
+                        + " (" + investimentos[i].getPercentualParticipacao() + "%)");
+                temInvest = true;
+            }
+        }
+        if (!temInvest) System.out.println("Nenhum investimento cadastrado para esta startup.");
+
+        Valuation valuation = new Valuation(startup);
+        double total = valuation.calcularTotalCaptado(investimentos, totalInvestimentos);
+        System.out.println("\nTotal captado: R$ " + total);
+        System.out.println("=============================");
+    }
+
+    // ===================== Opcao 8 - Calcular Valuation =====================
+    public static void calcularValuation(Scanner in){
+        if (totalStartups == 0) {
+            System.out.println("Nenhuma startup cadastrada.");
+            return;
+        }
+        System.out.println("Escolha a Startup pelo ID:");
+        listarStartup();
+        int idStartup = lerInteiro(in, "Digite o ID da Startup: ");
+        Startup startup = buscarStartupPorId(idStartup);
         if (startup == null) {
-            System.out.println("Erro: startup nao encontrada.");
+            System.out.println("Startup nao encontrada.");
             return;
         }
 
         Valuation valuation = new Valuation(startup);
         double total = valuation.calcularTotalCaptado(investimentos, totalInvestimentos);
-
         System.out.println("\n--- Valuation ---");
         System.out.println("Startup: " + startup.getNome());
-        System.out.println("Total captado: R$ " + String.format("%.2f", total));
+        System.out.println("Total captado: R$ " + total);
     }
 
- 
-    //IPU - INDICE DE POTENCIAL DE UNICORNIZACAO
-    /**
-     * IPU = mediaDosPitches * 25 + totalCaptado / 10000 + tempoExistenciaAnos * 10
-     */
-    /*static double calcularIPU(Startup startup) {
+    // ===================== IPU - Indice de Potencial de Unicornizacao =====================
+    // IPU = mediaDosPitches * 25 + totalCaptado / 10000 + tempoExistenciaAnos * 10
+    public static double calcularIPU(Startup startup){
         double mediaPitches = calcularMediaPitchesStartup(startup);
         double totalCaptado = calcularTotalInvestidoStartup(startup);
-
-        int anoAtual = 2026;
-        int tempoExistencia;
-        try {
-            tempoExistencia = startup.calcularTempoExistencia(anoAtual);
-            if (tempoExistencia < 0) {
-                tempoExistencia = 0;
-            }
-        } catch (Exception e) {
-            // Se a data estiver em formato invalido, considera tempo de existencia 0
-            // em vez de quebrar o programa.
-            tempoExistencia = 0;
-        }
-
+        int tempoExistencia = startup.calcularExistencia();
         return mediaPitches * 25 + totalCaptado / 10000 + tempoExistencia * 10;
     }
 
-    static String classificarIPU(double ipu) {
+    public static String classificarIPU(double ipu){
         if (ipu <= 100) {
             return "Startup Inicial";
         } else if (ipu <= 250) {
@@ -513,22 +463,16 @@ public class Main {
         }
     }
 
-    /**
-     * Opcao 9 do menu - Exibir Ranking de Startups.
-     * Calcula o IPU de cada startup cadastrada e ordena da maior
-     * para a menor pontuacao usando ordenacao simples (dois for, bolha).
-     */
-    /*static void exibirRankingStartups() {
+    // ===================== Opcao 9 - Ranking de Startups (por IPU) =====================
+    public static void exibirRankingStartups(){
         if (totalStartups == 0) {
             System.out.println("Nenhuma startup cadastrada.");
             return;
         }
 
-        // Vetores auxiliares (tamanho = totalStartups) para nao alterar a ordem
-        // original do vetor "startups", apenas a ordem do ranking.
+        // Vetores auxiliares para nao alterar a ordem original do vetor "startups".
         Startup[] ranking = new Startup[totalStartups];
         double[] pontuacoes = new double[totalStartups];
-
         for (int i = 0; i < totalStartups; i++) {
             ranking[i] = startups[i];
             pontuacoes[i] = calcularIPU(startups[i]);
@@ -552,18 +496,13 @@ public class Main {
         System.out.println("\n--- Ranking de Startups (por IPU) ---");
         for (int i = 0; i < totalStartups; i++) {
             System.out.println((i + 1) + "o lugar - " + ranking[i].getNome()
-                    + " | IPU: " + String.format("%.2f", pontuacoes[i])
+                    + " | IPU: " + pontuacoes[i]
                     + " | Classificacao: " + classificarIPU(pontuacoes[i]));
         }
     }
 
-    /**
-     * Opcao 10 do menu - Exibir Indice de Unicornizacao.
-     * Mostra: startup mais promissora, startup com maior volume de
-     * investimentos, investidor com maior valor investido e a
-     * classificacao de cada startup.
-     */
-    /*static void exibirIndiceUnicornizacao() {
+    // ===================== Opcao 10 - Indice de Unicornizacao =====================
+    public static void exibirIndiceUnicornizacao(){
         if (totalStartups == 0) {
             System.out.println("Nenhuma startup cadastrada.");
             return;
@@ -572,7 +511,6 @@ public class Main {
         // Startup mais promissora (maior IPU)
         Startup maisPromissora = startups[0];
         double maiorIPU = calcularIPU(startups[0]);
-
         for (int i = 1; i < totalStartups; i++) {
             double ipuAtual = calcularIPU(startups[i]);
             if (ipuAtual > maiorIPU) {
@@ -581,10 +519,9 @@ public class Main {
             }
         }
 
-        // Startup com maior volume de investimentos (soma de valores captados)
+        // Startup com maior volume de investimentos
         Startup maiorVolume = startups[0];
         double maiorTotalCaptado = calcularTotalInvestidoStartup(startups[0]);
-
         for (int i = 1; i < totalStartups; i++) {
             double totalAtual = calcularTotalInvestidoStartup(startups[i]);
             if (totalAtual > maiorTotalCaptado) {
@@ -593,22 +530,16 @@ public class Main {
             }
         }
 
-        // Investidor com maior valor investido.
-        // Caminho: Investimento -> Startup -> Investidor principal.
-        // Somamos, para cada investidor cadastrado, o total captado de
-        // todas as startups das quais ele e o investidor principal.
+        // Investidor com maior valor investido (soma das startups das quais ele e responsavel)
         Investidor investidorComMaiorValor = null;
         double maiorValorInvestidor = -1;
-
         for (int i = 0; i < totalInvestidores; i++) {
             double totalDoInvestidor = 0;
-
             for (int j = 0; j < totalStartups; j++) {
                 if (startups[j].getInvestidor().getId() == investidores[i].getId()) {
                     totalDoInvestidor += calcularTotalInvestidoStartup(startups[j]);
                 }
             }
-
             if (totalDoInvestidor > maiorValorInvestidor) {
                 maiorValorInvestidor = totalDoInvestidor;
                 investidorComMaiorValor = investidores[i];
@@ -617,22 +548,53 @@ public class Main {
 
         System.out.println("\n--- Indice de Potencial de Unicornizacao (IPU) ---");
         System.out.println("Startup mais promissora: " + maisPromissora.getNome()
-                + " (IPU: " + String.format("%.2f", maiorIPU) + ")");
-
+                + " (IPU: " + maiorIPU + ")");
         System.out.println("Startup com maior volume de investimentos: " + maiorVolume.getNome()
-                + " (Total captado: R$ " + String.format("%.2f", maiorTotalCaptado) + ")");
-
+                + " (Total captado: R$ " + maiorTotalCaptado + ")");
         if (investidorComMaiorValor != null) {
             System.out.println("Investidor com maior valor investido: " + investidorComMaiorValor.getNome()
-                    + " (Total: R$ " + String.format("%.2f", maiorValorInvestidor) + ")");
+                    + " (Total: R$ " + maiorValorInvestidor + ")");
         }
+
+        System.out.println("\n--- Ranking das Startups ---");
+        exibirRankingStartups();
 
         System.out.println("\n--- Classificacao de cada Startup ---");
         for (int i = 0; i < totalStartups; i++) {
             double ipu = calcularIPU(startups[i]);
             System.out.println(startups[i].getNome()
-                    + " | IPU: " + String.format("%.2f", ipu)
+                    + " | IPU: " + ipu
                     + " | Classificacao: " + classificarIPU(ipu));
         }
     }
-}*/
+
+    // ===================== Opcao 12 - Simulador de Crescimento (desafio extra) =====================
+    public static void simuladorCrescimento(Scanner in){
+        if (totalStartups == 0) {
+            System.out.println("Nenhuma startup cadastrada.");
+            return;
+        }
+        System.out.println("Escolha a Startup pelo ID:");
+        listarStartup();
+        int idStartup = lerInteiro(in, "Digite o ID da Startup: ");
+        Startup startup = buscarStartupPorId(idStartup);
+        if (startup == null) {
+            System.out.println("Startup nao encontrada.");
+            return;
+        }
+
+        double valor = calcularTotalInvestidoStartup(startup);
+        if (valor <= 0) {
+            System.out.println("Esta startup ainda nao captou investimentos. Usando valor base de R$ 1000,00.");
+            valor = 1000;
+        }
+        double percentual = lerDouble(in, "Percentual de crescimento anual (%): ");
+
+        System.out.println("\n--- Projecao de crescimento (5 anos) para " + startup.getNome() + " ---");
+        System.out.println("Ano 0: R$ " + valor);
+        for (int ano = 1; ano <= 5; ano++) {
+            valor = valor * (1 + percentual / 100);
+            System.out.println("Ano " + ano + ": R$ " + valor);
+        }
+    }
+}

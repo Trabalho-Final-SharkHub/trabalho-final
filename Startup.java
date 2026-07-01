@@ -48,18 +48,35 @@ public class Startup {
         this.investidor = investidor;
     }
 
-    //Calcular tempo de existencia da startup
-    public static void calcularExistencia(Scanner in){
-        System.out.println("Digite a data de hoje no formato dia/mes/ano:");
-        String dataHoje = in.nextLine();
+    //Calcular tempo de existencia da startup em anos, a partir do atributo "data".
+    //A data e uma String no formato "dd/mm/aaaa": o ano sao os 4 ultimos caracteres.
+    public int calcularExistencia(){
+        int anoAtual = 2026; // ano de referencia
+        String anoTexto = data.substring(6); // ex.: de "10/03/2020" pega "2020"
 
+        // Converte o texto do ano para numero, digito por digito (sem usar parseInt).
+        int anoFundacao = 0;
+        for (int i = 0; i < anoTexto.length(); i++) {
+            int digito = anoTexto.charAt(i) - '0';
+            anoFundacao = anoFundacao * 10 + digito;
+        }
+
+        int anos = anoAtual - anoFundacao;
+        if (anos < 0) {
+            anos = 0;
+        }
+        return anos;
     }
 
     @Override
     public String toString() {
-        return super.toString();
+        String nomeInvestidor = "N/A";
+        if (investidor != null) {
+            nomeInvestidor = investidor.getNome();
+        }
+        return nome + " (ID: " + id + " | Area: " + areaAtuacao
+                + " | Fundacao: " + data
+                + " | Investidor: " + nomeInvestidor + ")";
     }
-
-    //
 
 }
